@@ -1,9 +1,8 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
-    id 'kotlin-kapt'
     id 'com.google.dagger.hilt.android'
-
+    id 'kotlin-kapt'
 }
 
 android {
@@ -12,7 +11,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.anmolsplootassignment"
-        minSdk 21
+        minSdk 23
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -21,7 +20,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+        Properties properties = new Properties()
+        properties.load(project.rootProject.file("local.properties").newDataInputStream())
+        buildConfigField "String", "API_KEY", "\"${properties.getProperty("API_KEY")}\""
+
     }
+
 
     buildTypes {
         release {
@@ -76,6 +80,9 @@ dependencies {
 //    lifecycle
     implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
 
+//  android systems
+    implementation "com.google.accompanist:accompanist-permissions:$accompanist_version"
+    implementation "com.google.accompanist:accompanist-systemuicontroller:$accompanist_version"
 }
 
 kapt {

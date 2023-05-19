@@ -22,8 +22,7 @@ fun Navigation(
         startDestination = Screen.SplashScreen.route
     ) {
         composable(Screen.SplashScreen.route) {
-            SplashScreen(onNavigateToDashboard = { navController.navigate(Screen.Dashboard.route) })
-
+            SplashScreen(navController = navController)
         }
         composable(Screen.Dashboard.route) {
             Dashboard()
