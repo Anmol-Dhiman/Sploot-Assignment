@@ -10,15 +10,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.anmolsplootassignment.utils.MultiplePermissionStateExt.hasAllPermissions
+import com.example.anmolsplootassignment.utils.MultiplePermissionStateExt.rememberMultiplePermissionStateExt
 import com.example.anmolsplootassignment.utils.navigation.Screen
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun Instructions(navController: NavHostController, onClick: () -> Unit) {
-    val permissionState = rememberMultiplePermissionsState(
+    val permissionState = rememberMultiplePermissionStateExt(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION
@@ -59,7 +60,7 @@ fun Instructions(navController: NavHostController, onClick: () -> Unit) {
             Button(
                 onClick = {
                     onClick()
-                    if (!permissionState.permissions[0].hasPermission || !permissionState.permissions[1].hasPermission) {
+                    if (!permissionState.hasAllPermissions()) {
                         permissionState.launchMultiplePermissionRequest()
                         navController.popBackStack()
                         navController.navigate(Screen.Dashboard.route)

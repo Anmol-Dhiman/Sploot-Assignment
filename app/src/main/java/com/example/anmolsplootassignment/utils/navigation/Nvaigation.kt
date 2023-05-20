@@ -6,6 +6,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.example.anmolsplootassignment.presentation.dashboard.Dashboard
+import com.example.anmolsplootassignment.presentation.dashboard.DashboardViewModel
 import com.example.anmolsplootassignment.presentation.dashboard.components.Instructions
 import com.example.anmolsplootassignment.presentation.starter.SplashScreen
 
@@ -14,7 +15,9 @@ fun Navigation(
     modifier: Modifier,
     navController: NavHostController,
     onInstructionClick: () -> Unit,
-    isFirstTime: Boolean
+    isFirstTime: Boolean,
+    dashboardViewModel: DashboardViewModel,
+    openAppSettings: () -> Unit
 ) {
 
 
@@ -27,7 +30,7 @@ fun Navigation(
             SplashScreen(navController = navController, isFirstTime = isFirstTime)
         }
         composable(Screen.Dashboard.route) {
-            Dashboard()
+            Dashboard(viewModel = dashboardViewModel, openAppSettings = openAppSettings)
         }
         composable(Screen.Instruction.route) {
             Instructions(onClick = onInstructionClick, navController = navController)
