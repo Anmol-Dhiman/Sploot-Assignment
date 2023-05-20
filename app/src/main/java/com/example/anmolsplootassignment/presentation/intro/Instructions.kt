@@ -1,19 +1,29 @@
 package com.example.anmolsplootassignment.presentation.dashboard.components
 
+import android.Manifest
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.anmolsplootassignment.utils.navigation.Screen
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.rememberMultiplePermissionsState
 
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Instructions(onClick: () -> Unit) {
+fun Instructions(navController: NavHostController, onClick: () -> Unit) {
+    val permissionState = rememberMultiplePermissionsState(
+        permissions = listOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        )
+    )
 
     Box(
         modifier = Modifier
@@ -47,21 +57,17 @@ fun Instructions(onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(height = 25.dp))
 
             Button(
-                onClick = onClick,
+                onClick = {
+                    onClick()
+                    if (!permissionState.permissions[0].hasPermission || !permissionState.permissions[1].hasPermission) {
+                        permissionState.launchMultiplePermissionRequest()
+                        navController.popBackStack()
+                        navController.navigate(Screen.Dashboard.route)
+                    }
+                },
                 colors = ButtonDefaults.buttonColors(MaterialTheme.colors.onBackground)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Center
-                ) {
-                    Text(text = "Got it", color = MaterialTheme.colors.surface)
-                    Icon(
-                        imageVector = Icons.Default.KeyboardArrowRight,
-                        contentDescription = "right",
-                        tint = MaterialTheme.colors.surface
-                    )
-                }
-
+                Text(text = "Got it", color = MaterialTheme.colors.surface)
             }
         }
     }

@@ -19,7 +19,7 @@ import kotlinx.coroutines.delay
 
 
 @Composable
-fun SplashScreen(navController: NavHostController) {
+fun SplashScreen(navController: NavHostController, isFirstTime: Boolean) {
 
 
     var startAnimation by remember { mutableStateOf(false) }
@@ -34,7 +34,10 @@ fun SplashScreen(navController: NavHostController) {
         startAnimation = true
         delay(2000)
         navController.popBackStack()
-        navController.navigate(Screen.Dashboard.route)
+        if (isFirstTime)
+            navController.navigate(Screen.Instruction.route)
+        else
+            navController.navigate(Screen.Dashboard.route)
     }
     Splash(alpha = alphaAnim.value)
 

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Anmol Sploot Assignment</string>
+    <string name="is_first_time">isFirstTime</string>
 </resources>

@@ -1,29 +1,19 @@
 package com.example.anmolsplootassignment.presentation.dashboard
 
-import android.Manifest
-import android.annotation.SuppressLint
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import com.example.anmolsplootassignment.presentation.dashboard.components.Instructions
-import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.rememberMultiplePermissionsState
+import androidx.compose.ui.Modifier
+import com.google.maps.android.compose.GoogleMap
 
 
-@SuppressLint("CoroutineCreationDuringComposition")
-@ExperimentalPermissionsApi
 @Composable
 fun Dashboard() {
+    Box(Modifier.fillMaxSize()) {
+//        GoogleMap(
+//            modifier = Modifier.matchParentSize()
+//        )
 
-    val permissionState = rememberMultiplePermissionsState(
-        permissions = listOf(
-            Manifest.permission.ACCESS_FINE_LOCATION,
-            Manifest.permission.ACCESS_COARSE_LOCATION
-        )
-    )
-
-
-    val onInstructionsClick = {
-//TODO set the shared preference here
     }
-    Instructions(onInstructionsClick)
 
 }
