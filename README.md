@@ -8,6 +8,10 @@
 - Google Nearby Search API
 - Google Play Fused Location Service
 
+## Video Demo
+
+https://github.com/Anmol-Dhiman/Sploot-Assignment/assets/82818771/d693ae7e-070d-405e-ab7d-fed7d182d16c
+
 ## Application UI 
 
 <p style="text-align: center;"> 
