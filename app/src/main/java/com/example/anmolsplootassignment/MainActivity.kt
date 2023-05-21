@@ -10,8 +10,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
+import com.example.anmolsplootassignment.data.Location
 import com.example.anmolsplootassignment.presentation.dashboard.DashboardViewModel
 import com.example.anmolsplootassignment.ui.theme.AnmolSplootAssignmentTheme
 import com.example.anmolsplootassignment.utils.navigation.Navigation
@@ -55,3 +57,4 @@ fun Activity.openAppSettings() {
         Uri.fromParts("package", packageName, null)
     ).also(::startActivity)
 }
+

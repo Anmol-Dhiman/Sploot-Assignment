@@ -2,6 +2,9 @@ package com.example.anmolsplootassignment.presentation.dashboard
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.*
@@ -9,10 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.currentComposer
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
@@ -21,7 +21,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat.startActivity
 import com.example.anmolsplootassignment.presentation.dashboard.components.AlertMessage
 import com.example.anmolsplootassignment.presentation.dashboard.components.DropDownMenus
 import com.example.anmolsplootassignment.presentation.dashboard.components.PlaceDetailsCard
@@ -31,10 +34,9 @@ import com.example.anmolsplootassignment.utils.MultiplePermissionStateExt.isPerm
 import com.example.anmolsplootassignment.utils.MultiplePermissionStateExt.rememberMultiplePermissionStateExt
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapUiSettings
+import com.google.android.gms.maps.model.*
+import com.google.maps.android.compose.*
 
 
 @OptIn(ExperimentalPermissionsApi::class)
@@ -94,11 +96,13 @@ fun MapsScreen(viewModel: DashboardViewModel) {
     val focusManager = LocalFocusManager.current
     val queryData by viewModel.queryDataResponse.collectAsState()
     val currentLocation by viewModel.currentLocation.collectAsState()
-
+    var cardIndex by remember {
+        mutableStateOf(0)
+    }
 
     LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener {
-
         viewModel.updateCurrentLocation(it)
+
     }
 
 
@@ -109,11 +113,78 @@ fun MapsScreen(viewModel: DashboardViewModel) {
             modifier = Modifier
                 .fillMaxSize()
         ) {
+
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 uiSettings = MapUiSettings(zoomControlsEnabled = false, compassEnabled = false),
+                cameraPositionState = CameraPositionState(
+                    position = CameraPosition.fromLatLngZoom(
+                        LatLng(currentLocation.latitude, currentLocation.longitude), 15f
+                    )
+                ), onMapClick = {
+                    viewModel.updateDetailsCardStatus(false)
+                }
+            ) {
 
-                )
+                MapEffect(key1 = currentLocation, key2 = queryData, block = { map ->
+                    map.setOnMapLoadedCallback {
+                        map.clear()
+                        val currentLocationMarker = map.addMarker(
+                            MarkerOptions().position(
+                                LatLng(
+                                    currentLocation.latitude,
+                                    currentLocation.longitude
+                                )
+                            ).title("You are here")
+                        )
+                        currentLocationMarker?.showInfoWindow()
+
+                        currentLocationMarker?.tag = "current location"
+
+                        if (queryData.status == "OK") {
+                            queryData.results.forEachIndexed { index, it ->
+                                val location = map.addMarker(
+                                    MarkerOptions().position(
+                                        LatLng(
+                                            it.geometry?.location?.lat!!,
+                                            it.geometry?.location?.lng!!
+                                        )
+                                    ).title(it.name?.capitalize(Locale.current))
+                                        .icon(
+                                            BitmapDescriptorFactory.defaultMarker(
+                                                BitmapDescriptorFactory.HUE_ORANGE
+                                            )
+                                        )
+                                )
+
+                                location!!.tag = index
+
+                            }
+
+                        } else if (queryData.status == "UNKNOWN_ERROR" || queryData.status == "ZERO_RESULTS" || queryData.status == "REQUEST_DENIED") {
+                            Toast.makeText(
+                                context,
+                                "Search data is not correct",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+
+                        map.setOnMarkerClickListener { marker ->
+                            if (marker.tag != "current location") {
+                                cardIndex = marker.tag as Int
+                                viewModel.updateDetailsCardStatus(true)
+                                marker.showInfoWindow()
+                            } else {
+                                marker.showInfoWindow()
+                            }
+                            true
+                        }
+                    }
+
+
+                })
+            }
+
         }
 
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -134,7 +205,6 @@ fun MapsScreen(viewModel: DashboardViewModel) {
                             focusManager.clearFocus()
                             if (searchInput.isNotEmpty() && radiusRange.isNotEmpty() && locationType.isNotEmpty() && currentLocation.latitude != 0.0 && currentLocation.longitude != 0.0) {
                                 viewModel.fetchRequestedData()
-
                             } else
                                 Toast.makeText(
                                     context,
@@ -186,19 +256,27 @@ fun MapsScreen(viewModel: DashboardViewModel) {
             )
         }
 
+        Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+            if (showDetailsCard) {
+                val data = queryData.results[cardIndex]
+                PlaceDetailsCard(
+                    locationName = data.name!!,
+                    rating = data.rating.toString(),
+                    noOfReview = data.userRatingsTotal.toString(),
+                    address = data.vicinity!!,
+                    onDirectionClick = {
 
-//        Box(Modifier.align(Alignment.BottomCenter)) {
-//            if (showDetailsCard)
-//                PlaceDetailsCard(
-//                    locationName = "slajfkd",
-//                    rating = "slkdjf",
-//                    noOfReview = "aslkdf",
-//                    address = "slkdjf",
-//                    onDirectionClick = { /*TODO*/ },
-//                    types = listOf("bar", "rest"),
-//                    nearby = "slkdjf"
-//                )
-//        }
+                        val gmmIntentUri =
+                            Uri.parse("http://maps.google.com/maps?saddr=" + currentLocation.latitude.toString() + "," + currentLocation.longitude.toString() + "&daddr=" + data.geometry?.location?.lat.toString() + "," + data.geometry?.location?.lng.toString())
+                        val mapIntent = Intent(Intent.ACTION_VIEW, gmmIntentUri)
+                        mapIntent.setPackage("com.google.android.apps.maps")
+                        context.startActivity(mapIntent)
+                    },
+                    types = data.types,
+                    businessStatus = data.businessStatus!!
+                )
+            }
+        }
 
     }
 }

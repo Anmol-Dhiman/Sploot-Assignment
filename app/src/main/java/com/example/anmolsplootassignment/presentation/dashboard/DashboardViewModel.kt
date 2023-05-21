@@ -39,8 +39,12 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
     val queryDataResponse: StateFlow<NearbySearchApiResponse> = _queryDataResponse
 
     private val _currentLocation = MutableStateFlow(Location("service Provider"))
-      val currentLocation: StateFlow<Location> = _currentLocation
+    val currentLocation: StateFlow<Location> = _currentLocation
 
+    init {
+        _currentLocation.value.latitude = 28.457449973862865
+        _currentLocation.value.longitude = 77.04880826136397
+    }
 
     fun updateCurrentLocation(it: Location) {
         _currentLocation.value.latitude = it.latitude
@@ -65,33 +69,38 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
     }
 
     fun fetchRequestedData() {
-        Log.d("calling functions", "fetch function from view model")
         viewModelScope.launch {
 
             val nearbySearchApi =
                 getRetrofitBuilder(NEARBY_SEARCH_BASE_URL).create(NearbySearchApi::class.java)
 
-            nearbySearchApi.fetchNearbyLocation(
-                location = _currentLocation.value.latitude.toString() + "," + _currentLocation.value.longitude.toString(),
-                radius = _radiusRange.value,
-                type = _locationType.value,
-                keyword = _searchInput.value,
-                key = BuildConfig.MAPS_API_KEY
-            ).enqueue(
-                object : Callback<NearbySearchApiResponse> {
-                    override fun onResponse(
-                        call: Call<NearbySearchApiResponse>,
-                        response: Response<NearbySearchApiResponse>
-                    ) {
-                        Log.d("response", response.body().toString())
-                        _queryDataResponse.value = response.body()!!
-                    }
+            try {
+                nearbySearchApi.fetchNearbyLocation(
+                    location = _currentLocation.value.latitude.toString() + "," + _currentLocation.value.longitude.toString(),
+                    radius = _radiusRange.value,
+                    type = _locationType.value,
+                    keyword = _searchInput.value,
+                    key = BuildConfig.MAPS_API_KEY
+                ).enqueue(
+                    object : Callback<NearbySearchApiResponse> {
+                        override fun onResponse(
+                            call: Call<NearbySearchApiResponse>,
+                            response: Response<NearbySearchApiResponse>
+                        ) {
+                            Log.d("response", response.body().toString())
+                            if (response.isSuccessful)
+                                _queryDataResponse.value = response.body()!!
 
-                    override fun onFailure(call: Call<NearbySearchApiResponse>, t: Throwable) {
-                        TODO("Not yet implemented")
-                    }
+                        }
 
-                })
+                        override fun onFailure(call: Call<NearbySearchApiResponse>, t: Throwable) {
+                            Log.d("response", "failed")
+                        }
+
+                    })
+            } catch (e: Exception) {
+
+            }
         }
     }
 }

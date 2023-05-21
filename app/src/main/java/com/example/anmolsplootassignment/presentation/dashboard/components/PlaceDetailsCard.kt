@@ -17,6 +17,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.text.toUpperCase
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +35,7 @@ fun PlaceDetailsCard(
     address: String,
     onDirectionClick: () -> Unit,
     types: List<String>,
-    nearby: String
+    businessStatus: String
 ) {
     Card(
         shape = RoundedCornerShape(
@@ -72,12 +73,12 @@ fun PlaceDetailsCard(
                     Text(
                         text = "$rating/5 in $noOfReview reviews.",
                         color = MaterialTheme.colors.onSecondary,
-                        style = MaterialTheme.typography.caption
+                        style = MaterialTheme.typography.body1
                     )
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = address,
-                        color = MaterialTheme.colors.onSecondary,
+                        color = Color.Gray,
                         style = MaterialTheme.typography.body1
                     )
                 }
@@ -94,19 +95,20 @@ fun PlaceDetailsCard(
             Spacer(modifier = Modifier.height(10.dp))
             var type = ""
             types.forEach {
-                type += it.capitalize()
+                type += it.capitalize(Locale.current).replace("_", " ") + ","
                 type += " "
             }
 
-            Points(type)
-            Points(nearby)
+            Points(type, "Type")
+            Points(businessStatus, "Business Status")
+
         }
     }
 }
 
 
 @Composable
-fun Points(text: String) {
+fun Points(text: String, header: String) {
     Row {
         Canvas(
             modifier = Modifier
@@ -118,29 +120,12 @@ fun Points(text: String) {
             drawCircle(Color.Black)
         }
         Text(
-            text = text,
-            style = MaterialTheme.typography.body1,
-            color = MaterialTheme.colors.onSecondary,
-
-
-            )
+            text = "$header $text",
+            style = MaterialTheme.typography.body2,
+            color = Color.Gray,
+        )
 
     }
     Spacer(modifier = Modifier.height(8.dp))
 }
 
-@Preview
-@Composable
-fun PreviewComposable() {
-
-    val jobList = listOf<String>("bar", "restaurant")
-    PlaceDetailsCard(
-        locationName = "here",
-        rating = "4.4",
-        noOfReview = "233",
-        address = "ajeroije",
-        onDirectionClick = { /*TODO*/ },
-        types = jobList,
-        nearby = "erjoiw"
-    )
-}
