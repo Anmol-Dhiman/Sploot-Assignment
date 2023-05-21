@@ -46,8 +46,8 @@ class DashboardViewModel @Inject constructor(
 
 
     init {
-        _currentLocation.value.latitude = 28.457449973862865
-        _currentLocation.value.longitude = 77.04880826136397
+        _currentLocation.value.latitude = 0.0
+        _currentLocation.value.longitude = 0.0
     }
 
     fun updateCurrentLocation(it: Location) {

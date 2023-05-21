@@ -37,11 +37,6 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import okhttp3.Dispatcher
-
 
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
@@ -109,8 +104,14 @@ fun MapsScreen(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+
+    var selectedMarker by remember {
+        mutableStateOf(LatLng(currentLocation.latitude, currentLocation.longitude))
+    }
+
     LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener {
         viewModel.updateCurrentLocation(it)
+        selectedMarker = LatLng(currentLocation.latitude, currentLocation.longitude)
     }
     val cameraPosition: CameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(
@@ -138,8 +139,6 @@ fun MapsScreen(
                 },
 
                 ) {
-
-
                 MapEffect(key1 = currentLocation, key2 = queryData, block = { map ->
                     map.setOnMapLoadedCallback {
                         map.clear()
@@ -153,6 +152,15 @@ fun MapsScreen(
                         )
                         currentLocationMarker?.showInfoWindow()
                         currentLocationMarker?.tag = "current location"
+
+                        map.animateCamera(
+                            CameraUpdateFactory.newCameraPosition(
+                                CameraPosition.Builder()
+                                    .target(selectedMarker)
+                                    .zoom(15f).build()
+                            )
+                        )
+
 
                         if (queryData.status == "OK") {
                             queryData.results.forEachIndexed { index, it ->
@@ -187,9 +195,12 @@ fun MapsScreen(
                                 cardIndex = marker.tag as Int
                                 viewModel.updateDetailsCardStatus(true)
                                 marker.showInfoWindow()
-
+                                val location = queryData.results[cardIndex].geometry!!.location
+                                selectedMarker = LatLng(location?.lat!!, location?.lng!!)
                             } else {
                                 marker.showInfoWindow()
+                                selectedMarker =
+                                    LatLng(currentLocation.latitude, currentLocation.longitude)
                             }
 
                             true
