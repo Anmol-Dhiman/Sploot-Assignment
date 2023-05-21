@@ -108,6 +108,7 @@ fun DropDownMenuComponent(
 
                 Text(
                     text = if (range == "") initialText
+                    else if (initialText == "Radius") "$range M"
                     else range,
                     color = Color.Gray,
                     modifier = Modifier.padding(end = 12.dp),

@@ -4,6 +4,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -280,8 +281,18 @@ fun MapsScreen(
             DropDownMenus(
                 radiusRange = radiusRange,
                 locationType = locationType,
-                onRadiusChange = { viewModel.updateRadiusRange(it) },
-                onLocationTypeChange = { viewModel.updateLocationType(it) }
+                onRadiusChange = {
+                    viewModel.updateRadiusRange(it)
+                    if (searchInput.isNotEmpty() && locationType.isNotEmpty())
+                        viewModel.fetchRequestedData()
+                },
+                onLocationTypeChange = {
+                    viewModel.updateLocationType(it)
+                    if (searchInput.isNotEmpty() && radiusRange.isNotEmpty())
+                        viewModel.fetchRequestedData()
+
+
+                }
             )
         }
 
