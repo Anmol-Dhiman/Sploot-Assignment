@@ -3,10 +3,9 @@ package com.example.anmolsplootassignment.presentation.dashboard
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.material.*
@@ -24,7 +23,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.intl.Locale
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat.startActivity
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.anmolsplootassignment.presentation.dashboard.components.AlertMessage
 import com.example.anmolsplootassignment.presentation.dashboard.components.DropDownMenus
 import com.example.anmolsplootassignment.presentation.dashboard.components.PlaceDetailsCard
@@ -35,13 +34,24 @@ import com.example.anmolsplootassignment.utils.MultiplePermissionStateExt.rememb
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.*
 import com.google.maps.android.compose.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import okhttp3.Dispatcher
 
 
+@SuppressLint("MissingPermission")
 @OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun Dashboard(viewModel: DashboardViewModel, openAppSettings: () -> Unit) {
+fun Dashboard(
+    viewModel: DashboardViewModel = hiltViewModel(),
+    openAppSettings: () -> Unit
+) {
+
+
     val permissionState = rememberMultiplePermissionStateExt(
         permissions = listOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -84,7 +94,12 @@ fun Dashboard(viewModel: DashboardViewModel, openAppSettings: () -> Unit) {
 @SuppressLint("MissingPermission")
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-fun MapsScreen(viewModel: DashboardViewModel) {
+fun MapsScreen(
+    viewModel: DashboardViewModel
+) {
+
+    val queryData by viewModel.queryDataResponse.collectAsState()
+    val currentLocation by viewModel.currentLocation.collectAsState()
 
 
     val searchInput by viewModel.searchInput.collectAsState()
@@ -94,18 +109,18 @@ fun MapsScreen(viewModel: DashboardViewModel) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-    val queryData by viewModel.queryDataResponse.collectAsState()
-    val currentLocation by viewModel.currentLocation.collectAsState()
+    LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener {
+        viewModel.updateCurrentLocation(it)
+    }
+    val cameraPosition: CameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(
+            LatLng(currentLocation.latitude, currentLocation.longitude), 8f
+        )
+    }
+
     var cardIndex by remember {
         mutableStateOf(0)
     }
-
-    LocationServices.getFusedLocationProviderClient(context).lastLocation.addOnSuccessListener {
-        viewModel.updateCurrentLocation(it)
-
-    }
-
-
 
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -117,14 +132,13 @@ fun MapsScreen(viewModel: DashboardViewModel) {
             GoogleMap(
                 modifier = Modifier.fillMaxSize(),
                 uiSettings = MapUiSettings(zoomControlsEnabled = false, compassEnabled = false),
-                cameraPositionState = CameraPositionState(
-                    position = CameraPosition.fromLatLngZoom(
-                        LatLng(currentLocation.latitude, currentLocation.longitude), 15f
-                    )
-                ), onMapClick = {
+                cameraPositionState = cameraPosition,
+                onMapClick = {
                     viewModel.updateDetailsCardStatus(false)
-                }
-            ) {
+                },
+
+                ) {
+
 
                 MapEffect(key1 = currentLocation, key2 = queryData, block = { map ->
                     map.setOnMapLoadedCallback {
@@ -138,7 +152,6 @@ fun MapsScreen(viewModel: DashboardViewModel) {
                             ).title("You are here")
                         )
                         currentLocationMarker?.showInfoWindow()
-
                         currentLocationMarker?.tag = "current location"
 
                         if (queryData.status == "OK") {
@@ -174,16 +187,17 @@ fun MapsScreen(viewModel: DashboardViewModel) {
                                 cardIndex = marker.tag as Int
                                 viewModel.updateDetailsCardStatus(true)
                                 marker.showInfoWindow()
+
                             } else {
                                 marker.showInfoWindow()
                             }
+
                             true
                         }
                     }
-
-
                 })
             }
+
 
         }
 
@@ -220,7 +234,12 @@ fun MapsScreen(viewModel: DashboardViewModel) {
                         .onFocusChanged {
                             if (it.hasFocus)
                                 viewModel.updateDetailsCardStatus(false)
-                        },
+                        }
+                        .border(
+                            width = 0.5.dp,
+                            color = Color.Gray,
+                            shape = MaterialTheme.shapes.large
+                        ),
 
                     colors = TextFieldDefaults.textFieldColors(
                         backgroundColor = Color.White,
@@ -235,7 +254,6 @@ fun MapsScreen(viewModel: DashboardViewModel) {
                         )
                     },
                     shape = MaterialTheme.shapes.large,
-
 
                     placeholder = {
                         Text(

@@ -1,6 +1,7 @@
 package com.example.anmolsplootassignment.presentation.dashboard.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -73,54 +74,70 @@ fun DropDownMenuComponent(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box(
-    ) {
-
-        Row(
-            modifier = Modifier
+    Box {
+        Box(
+            Modifier
+                .border(
+                    width = 0.5.dp,
+                    color = Color.Gray,
+                    shape = MaterialTheme.shapes.large
+                )
+                .clickable {
+                    expanded = !expanded
+                }
                 .background(
                     color = MaterialTheme.colors.surface,
                     shape = MaterialTheme.shapes.large
-                )
-                .padding(horizontal = 8.dp, vertical = 10.dp)
-                .fillMaxWidth()
-                .clickable {
-                    expanded = !expanded
-                },
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
+                ),
         ) {
+            Row(
+                modifier = Modifier
 
-            Icon(
-                imageVector = icon,
-                contentDescription = initialText,
-                tint = Color.Gray,
-                modifier = Modifier.padding(end = 5.dp)
-            )
+                    .padding(horizontal = 8.dp, vertical = 10.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
 
-            Text(
-                text = if (range == "") initialText
-                else range,
-                color = Color.Gray,
-                modifier = Modifier.padding(end = 12.dp),
-                style = MaterialTheme.typography.caption
-            )
+                Icon(
+                    imageVector = icon,
+                    contentDescription = initialText,
+                    tint = Color.Gray,
+                    modifier = Modifier.padding(end = 5.dp)
+                )
+
+                Text(
+                    text = if (range == "") initialText
+                    else range,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(end = 12.dp),
+                    style = MaterialTheme.typography.caption
+                )
+            }
         }
-
         Box(Modifier.padding(top = 52.dp)) {
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                modifier = Modifier.padding(end = 42.dp)
+                modifier = Modifier
+                    .width(158.dp)
+
             ) {
                 listData.forEach { item ->
                     DropdownMenuItem(
-                        onClick = { onChange(item) }
+                        onClick = {
+                            onChange(item)
+                            expanded = false
+                        }
+
                     ) {
                         Text(
                             text = item,
                             style = MaterialTheme.typography.caption,
-                            color = Color.Gray
+                            color = Color.Gray,
+                            modifier = Modifier
+                                .fillMaxWidth()
+
                         )
 
                     }
@@ -128,7 +145,6 @@ fun DropDownMenuComponent(
 
             }
         }
-
-
     }
 }
+

@@ -2,7 +2,6 @@ package com.example.anmolsplootassignment.presentation.dashboard
 
 
 import android.location.Location
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.anmolsplootassignment.BuildConfig
@@ -19,8 +18,11 @@ import retrofit2.Callback
 import retrofit2.Response
 import javax.inject.Inject
 
+
 @HiltViewModel
-class DashboardViewModel @Inject constructor() : ViewModel() {
+class DashboardViewModel @Inject constructor(
+
+) : ViewModel() {
 
 
     private val _searchInput = MutableStateFlow("")
@@ -40,6 +42,8 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
 
     private val _currentLocation = MutableStateFlow(Location("service Provider"))
     val currentLocation: StateFlow<Location> = _currentLocation
+
+
 
     init {
         _currentLocation.value.latitude = 28.457449973862865
@@ -87,14 +91,13 @@ class DashboardViewModel @Inject constructor() : ViewModel() {
                             call: Call<NearbySearchApiResponse>,
                             response: Response<NearbySearchApiResponse>
                         ) {
-                            Log.d("response", response.body().toString())
                             if (response.isSuccessful)
                                 _queryDataResponse.value = response.body()!!
 
                         }
 
                         override fun onFailure(call: Call<NearbySearchApiResponse>, t: Throwable) {
-                            Log.d("response", "failed")
+
                         }
 
                     })
